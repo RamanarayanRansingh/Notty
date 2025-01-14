@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+
+# Streamlit cache files
+.streamlit/
+
+# Other OS-specific files
+.DS_Store
+Thumbs.db
