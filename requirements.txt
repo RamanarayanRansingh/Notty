@@ -1,0 +1,12 @@
+langchain
+langchain-groq
+streamlit
+beautifulsoup4
+markdown
+pygments
+python-dotenv
+textstat
+nltk
+pandas
+requests
+pydantic
