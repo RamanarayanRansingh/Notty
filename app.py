@@ -5,6 +5,10 @@ from chains.docs_analyzer import DocsAnalyzer
 from utils.code_processor import CodeProcessor
 from utils.docs_processor import DocsProcessor
 from config import Config
+# Required libraries for export formats
+from io import BytesIO
+from fpdf import FPDF  # For PDF export
+from docx import Document  # For DOCX export
 
 # Initialize components
 code_analyzer = CodeAnalyzer()
@@ -135,21 +139,61 @@ if st.session_state.doc_analysis:
         st.subheader("📒 Notes")
         notes = docs_analyzer.generate_notes(st.session_state.doc_content)
         st.markdown(notes, unsafe_allow_html=True)
-        
+
         # Export options
         st.subheader("Export Notes")
-        export_format = st.selectbox("Select format", Config.EXPORT_FORMATS, key="export_format")
-        if st.button("Export Notes", key="export_notes"):
-            try:
-                formatted_notes = DocsProcessor.format_for_export(notes, export_format)
-                st.download_button(
-                    label=f"Download Notes as {export_format.upper()}",
-                    data=formatted_notes,
-                    file_name=f"notes.{export_format}",
-                    mime="text/plain"
-                )
-            except Exception as e:
-                st.error(f"Error exporting notes: {e}")
+        export_format = st.selectbox(
+            "Select format",
+            ["HTML", "Markdown", "PDF", "DOCX"],  # Include all options
+            key="export_format"
+        )
+
+if st.button("Export Notes", key="export_notes"):
+    try:
+        # Format notes based on the selected format
+        if export_format == "HTML":
+            formatted_notes = DocsProcessor.format_for_export(notes, "HTML")
+            mime_type = "text/html"
+            file_name = "notes.html"
+        elif export_format == "Markdown":
+            formatted_notes = DocsProcessor.format_for_export(notes, "Markdown")
+            mime_type = "text/markdown"
+            file_name = "notes.md"
+        elif export_format == "PDF":
+            # Create a PDF using FPDF
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            for line in notes.split("\n"):
+                pdf.cell(200, 10, txt=line, ln=True, align='L')
+            buffer = BytesIO()
+            pdf.output(buffer)
+            buffer.seek(0)
+            formatted_notes = buffer.read()
+            mime_type = "application/pdf"
+            file_name = "notes.pdf"
+        elif export_format == "DOCX":
+            # Create a DOCX using python-docx
+            doc = Document()
+            for line in notes.split("\n"):
+                doc.add_paragraph(line)
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            formatted_notes = buffer.read()
+            mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            file_name = "notes.docx"
+        
+        # Provide the download button
+        st.download_button(
+            label=f"Download Notes as {export_format.upper()}",
+            data=formatted_notes,
+            file_name=file_name,
+            mime=mime_type
+        )
+    except Exception as e:
+        st.error(f"Error exporting notes: {e}")
+
 
 # Code Analyzer Page
 elif page == "Code Analyzer":
