@@ -141,12 +141,12 @@ if st.session_state.doc_analysis:
         st.markdown(notes, unsafe_allow_html=True)
 
         # Export options
-        st.subheader("Export Notes")
-        export_format = st.selectbox(
-            "Select format",
-            ["HTML", "Markdown", "PDF", "DOCX"],  # Include all options
-            key="export_format"
-        )
+st.subheader("Export Notes")
+export_format = st.selectbox(
+    "Select format",
+    ["HTML", "Markdown", "PDF", "DOCX"],  # Include all options
+    key="export_format"
+)
 
 if st.button("Export Notes", key="export_notes"):
     try:
@@ -166,10 +166,8 @@ if st.button("Export Notes", key="export_notes"):
             pdf.set_font("Arial", size=12)
             for line in notes.split("\n"):
                 pdf.cell(200, 10, txt=line, ln=True, align='L')
-            buffer = BytesIO()
-            pdf.output(buffer)
-            buffer.seek(0)
-            formatted_notes = buffer.read()
+            # Output PDF as bytes
+            formatted_notes = pdf.output(dest="S").encode("latin1")
             mime_type = "application/pdf"
             file_name = "notes.pdf"
         elif export_format == "DOCX":
@@ -193,7 +191,6 @@ if st.button("Export Notes", key="export_notes"):
         )
     except Exception as e:
         st.error(f"Error exporting notes: {e}")
-
 
 # Code Analyzer Page
 elif page == "Code Analyzer":
